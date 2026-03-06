@@ -1,7 +1,7 @@
 import * as http from 'http';
 import * as dotenv from 'dotenv';
-import pool from './config/db';
 import { login } from './controllers/AuthController';
+import { listClients, addClient } from './controllers/ClientController';
 
 dotenv.config();
 
@@ -21,24 +21,24 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // --- ROTA DE TESTE (GET) ---
-    if (req.url === '/api/test' && req.method === 'GET') {
-        try {
-            const [rows] = await pool.query('SELECT "TypeScript + MySQL OK" as status');
-            res.writeHead(200);
-            res.end(JSON.stringify({ data: rows }));
-        } catch (error: any) {
-            res.writeHead(500);
-            res.end(JSON.stringify({ error: "Erro no banco", details: error.message }));
-        }
-    }
+    // --- ROTEAMENTO ---
 
-    // --- ROTA DE LOGIN (POST) ---
-    else if (req.url === '/api/login' && req.method === 'POST') {
+    // 1. Rota de Login
+    if (req.url === '/api/login' && req.method === 'POST') {
         await login(req, res);
     }
 
-    // --- ROTA NÃO ENCONTRADA ---
+    // 2. Rota de Listar Clientes
+    else if (req.url === '/api/clientes' && req.method === 'GET') {
+        await listClients(req, res);
+    }
+
+    // 3. Rota de Cadastrar Cliente
+    else if (req.url === '/api/clientes' && req.method === 'POST') {
+        await addClient(req, res);
+    }
+
+    // 4. Rota não encontrada
     else {
         res.writeHead(404);
         res.end(JSON.stringify({ message: "Rota não encontrada" }));
